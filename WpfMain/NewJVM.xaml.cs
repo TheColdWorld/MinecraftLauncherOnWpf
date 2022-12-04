@@ -31,7 +31,7 @@ namespace WpfMain
             Microsoft.Win32.OpenFileDialog ofd = new Microsoft.Win32.OpenFileDialog();
             ofd.Filter = "Java.exe|Java.exe";
             ofd.DefaultExt = ".exe";
-            ofd.Title = "选择一个javaw.exe";
+            ofd.Title = "选择一个java.exe";
             ofd.CheckFileExists = false;
             bool? result = ofd.ShowDialog();
             if (result == true)
@@ -48,7 +48,6 @@ namespace WpfMain
                 string JvmJavaexePath = Java.Text;
                 System.IO.DirectoryInfo topDir = System.IO.Directory.GetParent(Java.Text);
                 string javapath = System.IO.Directory.GetParent(topDir.FullName).FullName;
-
                 MainControls.MainWindow.Addjvm("手动", javapath, "添加", JvmJavaexePath);
                 Close();
             }

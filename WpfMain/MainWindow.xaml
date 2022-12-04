@@ -10,10 +10,9 @@
         <TextBlock Height="20" Width="150" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,10,10,10" Text="选择一个："/>
         <ComboBox x:Name="McVersionChoComboBox"   Height="20" Width="190" 
                   HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,30,10,10"
-                  DisplayMemberPath="Id"/>
+                  DisplayMemberPath="Version"/>
         <TextBlock Height="20" Width="150" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,60,10,10" Text="选择一个JVM："/>
-        <Button x:Name="FindJavaBut" Height="20" Width="60" Content="自动查找" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="100,60,0,0" Click="JVM_Find_Button_click"/>
-        <Button x:Name="LoadJava" Height="20" Width="60" Content="手动添加" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="170,60,0,0" Click="JVM_User_Find_Button_click"/>
+        <Button x:Name="LoadJava" Height="20" Width="60" Content="手动添加" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="150,60,0,0" Click="JVM_User_Find_Button_click"/>
         <ComboBox x:Name="JavaCombox"   Height="20" Width="190"  HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10,80,10,10" >
             <ComboBox.ItemTemplate>
                 <DataTemplate>

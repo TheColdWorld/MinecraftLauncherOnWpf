@@ -29,7 +29,20 @@ namespace WpfMain
                             }
                             break;
                         case "-debug":
-                            { MainControls.DebugAble = true; }
+                            { 
+                                MainControls.DebugAble = true;
+                                MainControls.DebugLevel = 1;
+                            }
+                            break;
+                        case "-debugLevel:1":
+                            {
+                                MainControls.DebugLevel = 1;
+                            }
+                            break;
+                        case "-debugLevel:2":
+                            {
+                                MainControls.DebugLevel = 2;
+                            }
                             break;
                     }
                 }
@@ -37,10 +50,11 @@ namespace WpfMain
             if (!MainControls.ConsoleMode)
             {
                 Console.Title = "启动主程序中";
+                MainControls.ConsoleHWND = MainControls.FindWindow("ConsoleWindowClass", "启动主程序中");
                 if (!MainControls.DebugAble)
                 {
-                    IntPtr intptr = MainControls.FindWindow("ConsoleWindowClass", "启动主程序中");
-                    MainControls.ShowWindow(intptr, 0);
+                    MainControls.ShowWindow(MainControls.ConsoleHWND, 0);
+                    MainControls.ConsoleShowAble = false;
                 }
                 MainControls.MainApplication = new App();
                 MainControls.MainApplication.InitializeComponent();
@@ -62,9 +76,35 @@ namespace WpfMain
         public static extern Boolean AllocConsole();
         [DllImport("kernel32.dll")]
         public static extern Boolean FreeConsole();
+        public static IntPtr ConsoleHWND;
+        public static bool ConsoleShowAble;
         public static bool ConsoleMode { get; set; }
         public static MainWindow MainWindow;
         public static bool DebugAble { get; set; }
+        public static int DebugLevel { get; set; }
         public static App MainApplication;
+        public static string ApplicationPath = System.AppDomain.CurrentDomain.BaseDirectory;
+        public static void AddConsole(string Message)
+        {
+            Console.Write(Message);
+        }
+        public static void AddConsoleLine(string Message)
+        {
+            Console.WriteLine(Message);
+        }
+        public static void ShowConsole()
+        {
+            if (ConsoleMode) return;
+            if (!ConsoleShowAble)
+            {
+                ShowWindow(ConsoleHWND, 1);
+                ConsoleShowAble = true;
+            }
+            else
+            {
+                ShowWindow(ConsoleHWND, 0);
+                ConsoleShowAble = false;
+            }
+        }
     }
 }
