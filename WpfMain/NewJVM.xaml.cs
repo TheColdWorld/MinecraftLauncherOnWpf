@@ -4,14 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using WpfMain;
 
 namespace WpfMain
 {
@@ -48,7 +40,7 @@ namespace WpfMain
                 string JvmJavaexePath = Java.Text;
                 System.IO.DirectoryInfo topDir = System.IO.Directory.GetParent(Java.Text);
                 string javapath = System.IO.Directory.GetParent(topDir.FullName).FullName;
-                MainControls.MainWindow.Addjvm("手动", javapath, "添加", JvmJavaexePath);
+                MainControls.MainWindow.Addjvm("手动添加", javapath, "", JvmJavaexePath);
                 Close();
             }
         }

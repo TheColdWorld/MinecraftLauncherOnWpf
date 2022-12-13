@@ -46,14 +46,14 @@ namespace WpfMain
                 if (MainControls.DebugAble)
                 {
                     MessageBox.Show(Application.Current.MainWindow, e.Message + "\n在" + e.StackTrace, "", MessageBoxButton.OK, MessageBoxImage.Error);
-                    MainControls.AddConsoleLine(e.Message + "\n在" + e.StackTrace);
+                    MainControls.AddConsoleLine("[debug][errer]"+e.Message + "\n在" + e.StackTrace);
                 }
                 else
                 {
                     MessageBox.Show(Application.Current.MainWindow, e.Message, "", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
-            if(MainControls.DebugAble) MainControls.AddConsoleLine("初始化完毕,开始启动窗口");
+            if(MainControls.DebugAble) MainControls.AddConsoleLine("[debug][Info]初始化完毕,开始启动窗口");
         }
         private void OfflineLogin_button_click(object sender, RoutedEventArgs e)
         {
@@ -118,7 +118,37 @@ namespace WpfMain
 
         private void Launch_button_click(object sender, RoutedEventArgs e)
         {
-
+            if (McVersionChoComboBox.SelectedIndex == -1)
+            {
+                MessageBox.Show(Application.Current.MainWindow, "你没选版本","", MessageBoxButton.OK, MessageBoxImage.Information);
+                MainControls.AddConsoleLine("[errer]启动:你没选版本");
+                return;
+            }
+            if (JavaCombox.SelectedIndex == -1)
+            {
+                MessageBox.Show(Application.Current.MainWindow, "你没选JVM", "", MessageBoxButton.OK, MessageBoxImage.Information);
+                MainControls.AddConsoleLine("[errer]启动:你没选JVM");
+                return;
+            }
+            if (String.IsNullOrEmpty(MemBox.Text))
+            {
+                MessageBox.Show(Application.Current.MainWindow, "你没填写内存", "", MessageBoxButton.OK, MessageBoxImage.Information);
+                MainControls.AddConsoleLine("[errer]启动:你没填写内存");
+                return;
+            }
+            if (string.IsNullOrEmpty(WindowHeight.Text) || string.IsNullOrEmpty(WindowWidth.Text))
+            {
+                MessageBox.Show(Application.Current.MainWindow, "你把窗口大小删了", "", MessageBoxButton.OK, MessageBoxImage.Information);
+                MainControls.AddConsoleLine("[errer]启动:你把窗口大小删了");
+                return;
+            }
+            if (System.Convert.ToInt32(WindowHeight.Text)==0 || System.Convert.ToInt32(WindowWidth.Text)==0)
+            {
+                MessageBox.Show(Application.Current.MainWindow, "你把窗口大小设置成0了", "", MessageBoxButton.OK, MessageBoxImage.Information);
+                MainControls.AddConsoleLine("[errer]启动:你把窗口大小删了");
+                return;
+            }
+            
         }
 
         private void JVM_User_Find_Button_click(object sender, RoutedEventArgs e)
@@ -145,27 +175,7 @@ namespace WpfMain
         /// <summary>
         /// Http下载文件
         /// </summary>
-        public static string HttpDownloadFile(string url, string path)
-        {
-            // 设置参数
-            HttpWebRequest request = WebRequest.Create(url) as HttpWebRequest;
-            //发送请求并获取相应回应数据
-            HttpWebResponse response = request.GetResponse() as HttpWebResponse;
-            //直到request.GetResponse()程序才开始向目标网页发送Post请求
-            Stream responseStream = response.GetResponseStream();
-            //创建本地文件写入流
-            Stream stream = new FileStream(path, FileMode.Create);
-            byte[] bArr = new byte[1024];
-            int size = responseStream.Read(bArr, 0, (int)bArr.Length);
-            while (size > 0)
-            {
-                stream.Write(bArr, 0, size);
-                size = responseStream.Read(bArr, 0, (int)bArr.Length);
-            }
-            stream.Close();
-            responseStream.Close();
-            return path;
-        }
+        
         /// <summary>
         /// 寻找mc核心文件
         /// </summary>
@@ -173,7 +183,7 @@ namespace WpfMain
         public MCCores[] CheckMccores()
         {
             DateTime StartTime = DateTime.Now;
-            if(MainControls.DebugAble) MainControls.AddConsoleLine("开始Mc核心查找");
+            if (MainControls.DebugAble) MainControls.AddConsoleLine("[debug][Info]开始Mc核心查找");
             if (!System.IO.Directory.Exists(System.IO.Path.Combine(MainControls.ApplicationPath, @".minecraft")))
             {
                 throw new MCCoresSearchExpection(1);
@@ -203,37 +213,39 @@ namespace WpfMain
             {
                 Return[id].Path = VersionsDirInfoss.FullName;
                 Return[id].Version = VersionsDirInfoss.Name;
-                if (!System.IO.File.Exists(System.IO.Path.Combine(VersionsDirInfoss.FullName, VersionsDirInfoss.Name + @".jar"))|| System.IO.File.Exists(System.IO.Path.Combine(VersionsDirInfoss.FullName, VersionsDirInfoss.Name + @".json")))
+
+                if (!System.IO.File.Exists(System.IO.Path.Combine(VersionsDirInfoss.FullName, VersionsDirInfoss.Name + @".jar")) || System.IO.File.Exists(System.IO.Path.Combine(VersionsDirInfoss.FullName, VersionsDirInfoss.Name + @".json")))
                 {
                     Return[id].LaunchAble = false;
                 }
                 id++;
             }
             DateTime Step1Span = DateTime.Now;
-            if(MainControls.DebugAble) MainControls.AddConsoleLine("Mc核心查找完成,用时为" + (Step1Span-StartTime).ToString());
+            if (MainControls.DebugAble) MainControls.AddConsoleLine("[debug][Info]Mc核心查找完成,用时为" + (Step1Span - StartTime).ToString());
             for (int ie = 0; ie < Return.Length; ie++)
             {
                 string MCversionJsonData = System.IO.File.ReadAllText(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(MainControls.ApplicationPath, @".minecraft"), @"versions"), Return[ie].Version), Return[ie].Version + @".json"), Encoding.UTF8);
                 CsharpJson.JsonDocument MCversionJsonDataadoc = CsharpJson.JsonDocument.FromString(MCversionJsonData);
                 CsharpJson.JsonObject MCclientVersionDataobj = MCversionJsonDataadoc.Object;
-                string McversionType = MCclientVersionDataobj.Value("assets").ToString();
-                int McversionTypeInt = System.Convert.ToInt32(McversionType.Split(new string[] { "." }, StringSplitOptions.None)[0] + McversionType.Split(new string[] { "." }, StringSplitOptions.None)[1]);
+                Return[ie].VersionTyte = MCclientVersionDataobj.Value("assets").ToString();
+                
+                int McversionTypeInt = System.Convert.ToInt32(Return[ie].VersionTyte.Split(new string[] { "." }, StringSplitOptions.None)[0] + Return[ie].VersionTyte.Split(new string[] { "." }, StringSplitOptions.None)[1]);
                 if (McversionTypeInt == 117)
                 {
                     Return[ie].Log4JFixLevel = 3;
                 }
-               else if (McversionTypeInt > 17 && McversionTypeInt < 111)
+                else if (McversionTypeInt > 17 && McversionTypeInt < 111)
                 {
                     Return[ie].Log4JFixLevel = 1;
-                    
-                    HttpDownloadFile("https://launcher.mojang.com/v1/objects/dd2b723346a8dcd48e7f4d245f6bf09e98db9696/log4j2_17-111.xml", System.IO.Path.Combine(Return[ie].Path, @"log4j2_Config.xml"));
+
+                    MainControls.HttpDownloadFile("https://launcher.mojang.com/v1/objects/dd2b723346a8dcd48e7f4d245f6bf09e98db9696/log4j2_17-111.xml", System.IO.Path.Combine(Return[ie].Path, @"log4j2_Config.xml"));
                     Return[ie].LaunchAble = true;
                 }
                 else if (McversionTypeInt > 1.12 && McversionTypeInt < 1.16)
                 {
                     Return[ie].Log4JFixLevel = 2;
 
-                    HttpDownloadFile("https://launcher.mojang.com/v1/objects/02937d122c86ce73319ef9975b58896fc1b491d1/log4j2_112-116.xml", System.IO.Path.Combine(Return[ie].Path, @"log4j2_Config.xml"));
+                    MainControls.HttpDownloadFile("https://launcher.mojang.com/v1/objects/02937d122c86ce73319ef9975b58896fc1b491d1/log4j2_112-116.xml", System.IO.Path.Combine(Return[ie].Path, @"log4j2_Config.xml"));
                     Return[ie].LaunchAble = true;
                 }
                 else if (McversionTypeInt < 17)
@@ -243,22 +255,22 @@ namespace WpfMain
                 else
                 {
                     Return[ie].Log4JFixLevel = 0;
-                    HttpDownloadFile("https://launcher.mojang.com/v1/objects/bd65e7d2e3c237be76cfbef4c2405033d7f91521/client-1.12.xml", System.IO.Path.Combine(Return[ie].Path, @"log4j2_Config.xml"));
+                    MainControls.HttpDownloadFile("https://launcher.mojang.com/v1/objects/bd65e7d2e3c237be76cfbef4c2405033d7f91521/client-1.12.xml", System.IO.Path.Combine(Return[ie].Path, @"log4j2_Config.xml"));
                     Return[ie].LaunchAble = true;
                 }
                 DateTime Step2Span = DateTime.Now;
                 if (MainControls.DebugAble)
                 {
-                    MainControls.AddConsoleLine("所有Mc核心的log4j配置完成,用时为" + (Step2Span - Step1Span).ToString());
-                    MainControls.AddConsoleLine("开始寻找所有Mc核心的部分配置");
+                    MainControls.AddConsoleLine("[debug][Info]所有Mc核心的log4j配置完成,用时为" + (Step2Span - Step1Span).ToString());
+                    MainControls.AddConsoleLine("[debug][Info]开始寻找所有Mc核心的部分配置");
                 }
-               
+
                 if (McversionTypeInt > 113)
                 {
                     CsharpJson.JsonValue arguments = MCclientVersionDataobj.Value("arguments");
                     CsharpJson.JsonArray arguments_game_list = arguments.ToObject().Value("game").ToArray();
                     string Arg = string.Empty;
-                    for (int i = 0, j = 0; i < arguments_game_list.Count-2; i++)
+                    for (int i = 0, j = 0; i < arguments_game_list.Count - 2; i++)
                     {
                         if (j < 2)
                         {
@@ -284,13 +296,13 @@ namespace WpfMain
                 DateTime Step3Span = DateTime.Now;
                 if (MainControls.DebugAble)
                 {
-                    MainControls.AddConsoleLine("所有Mc核心的部分参数配置完成,用时为" + (Step3Span - Step2Span).ToString());
-                    MainControls.AddConsoleLine("开始阅览所有Mc核心的运行库并尝试修复");
+                    MainControls.AddConsoleLine("[debug][Info]所有Mc核心的部分参数配置完成,用时为" + (Step3Span - Step2Span).ToString());
+                    MainControls.AddConsoleLine("[debug][Info]开始阅览所有Mc核心的运行库并尝试修复");
                 }
                 CsharpJson.JsonArray McClientLibrary = MCclientVersionDataobj.Value("libraries").ToArray();
                 McLibrary[] Mclib = new McLibrary[McClientLibrary.Count];
                 for (int i = 0; i < Mclib.Length; i++) Mclib[i] = new McLibrary();
-                for (int i=0; i < McClientLibrary.Count; i++)
+                for (int i = 0; i < McClientLibrary.Count; i++)
                 {
                     try
                     {
@@ -305,49 +317,49 @@ namespace WpfMain
                     {
                         continue;
                     }
-                    
-                        Mclib[i].name = McClientLibrary.Value(i).ToObject().Value("name").ToString();
-                        if (McClientLibrary.Value(i).ToObject().Value("natives").IsObject())
+
+                    Mclib[i].name = McClientLibrary.Value(i).ToObject().Value("name").ToString();
+                    if (McClientLibrary.Value(i).ToObject().Value("natives").IsObject())
+                    {
+                        try
                         {
-                            try
+                            if (McClientLibrary.Value(i).ToObject().Value("downloads").ToObject().Value("classifiers").ToObject().Value("natives-windows").IsObject())
                             {
-                                if (McClientLibrary.Value(i).ToObject().Value("downloads").ToObject().Value("classifiers").ToObject().Value("natives-windows").IsObject())
-                                {
-                                    Mclib[i].path = System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(MainControls.ApplicationPath, @".minecraft"), @"libraries"), McClientLibrary.Value(i).ToObject().Value("downloads").ToObject().Value("classifiers").ToObject().Value("natives-windows").ToObject().Value("path").ToString());
-                                    Mclib[i].url = McClientLibrary.Value(i).ToObject().Value("downloads").ToObject().Value("classifiers").ToObject().Value("natives-windows").ToObject().Value("url").ToString();
-                                }
-                            }
-                            catch(System.Collections.Generic.KeyNotFoundException)
-                            {
-                                if (McClientLibrary.Value(i).ToObject().Value("downloads").ToObject().Value("classifiers").ToObject().Value("natives-windows-64").IsObject())
-                                {
-                                    Mclib[i].path = System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(MainControls.ApplicationPath, @".minecraft"), @"libraries"), McClientLibrary.Value(i).ToObject().Value("downloads").ToObject().Value("classifiers").ToObject().Value("natives-windows-64").ToObject().Value("path").ToString());
-                                    Mclib[i].url = McClientLibrary.Value(i).ToObject().Value("downloads").ToObject().Value("classifiers").ToObject().Value("natives-windows-64").ToObject().Value("url").ToString();
-                                }
+                                Mclib[i].path = System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(MainControls.ApplicationPath, @".minecraft"), @"libraries"), McClientLibrary.Value(i).ToObject().Value("downloads").ToObject().Value("classifiers").ToObject().Value("natives-windows").ToObject().Value("path").ToString());
+                                Mclib[i].url = McClientLibrary.Value(i).ToObject().Value("downloads").ToObject().Value("classifiers").ToObject().Value("natives-windows").ToObject().Value("url").ToString();
                             }
                         }
-                        else
+                        catch (System.Collections.Generic.KeyNotFoundException)
                         {
-                            Mclib[i].path = System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(MainControls.ApplicationPath, @".minecraft"), @"libraries"), McClientLibrary.Value(i).ToObject().Value("downloads").ToObject().Value("artifact").ToObject().Value("path").ToString());
-                            Mclib[i].url = McClientLibrary.Value(i).ToObject().Value("downloads").ToObject().Value("artifact").ToObject().Value("url").ToString();
+                            if (McClientLibrary.Value(i).ToObject().Value("downloads").ToObject().Value("classifiers").ToObject().Value("natives-windows-64").IsObject())
+                            {
+                                Mclib[i].path = System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(MainControls.ApplicationPath, @".minecraft"), @"libraries"), McClientLibrary.Value(i).ToObject().Value("downloads").ToObject().Value("classifiers").ToObject().Value("natives-windows-64").ToObject().Value("path").ToString());
+                                Mclib[i].url = McClientLibrary.Value(i).ToObject().Value("downloads").ToObject().Value("classifiers").ToObject().Value("natives-windows-64").ToObject().Value("url").ToString();
+                            }
                         }
-                    
+                    }
+                    else
+                    {
+                        Mclib[i].path = System.IO.Path.Combine(System.IO.Path.Combine(System.IO.Path.Combine(MainControls.ApplicationPath, @".minecraft"), @"libraries"), McClientLibrary.Value(i).ToObject().Value("downloads").ToObject().Value("artifact").ToObject().Value("path").ToString());
+                        Mclib[i].url = McClientLibrary.Value(i).ToObject().Value("downloads").ToObject().Value("artifact").ToObject().Value("url").ToString();
+                    }
+
                     if (!System.IO.File.Exists(Mclib[i].path))
                     {
-                       
+                        MainControls.AddConsoleLine("[debug][Info]未找到\'"+ Mclib[i].name+"\',开始下载");
                         if (!System.IO.Directory.Exists(System.IO.Directory.GetParent(Mclib[i].path).ToString()))
                         {
                             System.IO.Directory.CreateDirectory(System.IO.Directory.GetParent(Mclib[i].path).ToString());
                         }
-                        HttpDownloadFile(Mclib[i].url, Mclib[i].path);
+                        MainControls.HttpDownloadFile(Mclib[i].url, Mclib[i].path);
                     }
                 }
                 Return[ie].Libraries = Mclib;
                 DateTime StopSpan = DateTime.Now;
                 if (MainControls.DebugAble)
                 {
-                    MainControls.AddConsoleLine("所有Mc核心的库配置完成,用时为" + (StopSpan - Step3Span).ToString());
-                    MainControls.AddConsoleLine("操作完成,总用时为" + (StopSpan - StartTime).ToString());
+                    MainControls.AddConsoleLine("[debug][Info]所有Mc核心的库配置完成,用时为" + (StopSpan - Step3Span).ToString());
+                    MainControls.AddConsoleLine("[debug][Info]操作完成,总用时为" + (StopSpan - StartTime).ToString());
                 }
             }
             return Return;
@@ -386,9 +398,10 @@ namespace WpfMain
         public class MCCores
         {
             public McLibrary[] Libraries { get; set; }
+            public string VersionTyte { get; set; }
             public string Version { get; set; }
             public string Args { get; set; }
-            public string LaunchArgs { get; set; }
+            public string LaunchArgs { get;set; }
             public string MainClass { set; get; }
             public string Type { set; get; }
             public string Path { set; get; }
@@ -407,6 +420,20 @@ namespace WpfMain
             /// 3:-Dlog4j2.formatMsgNoLookups=true
             /// </summary>
             public int Log4JFixLevel { get; set; }
+            void GetLaunchArgs(MCBugjumpLoginToken MCBugjumpLoginToken)
+            {
+                
+            }
+            void GetLaunchArgs(MCMicrosoftLoginToken MCMicrosoftLoginToken)
+            {
+
+            }
+            void GetLaunchArgs(string uuid,string name)
+            {
+               LaunchArgs= LaunchArgs.Replace("${auth_player_name}",name).Replace("${version_name}",Version).Replace("${game_directory}",Path).Replace("${assets_root}",
+                 System.IO.Path.Combine(System.IO.Path.Combine(MainControls.ApplicationPath, @".minecraft"), @"assets")).Replace("${assets_index_name}",VersionTyte).Replace(
+                 "${auth_uuid}",uuid).Replace("${auth_access_token}","0");
+            }
         }
         public class MCBugjumpLoginToken
         {
@@ -427,7 +454,6 @@ namespace WpfMain
             public string UserName { get; set; }
             public string UserUUID { get; set; }
         }
-
         public class MCCoresSearchExpection : ApplicationException
         {
             /// <summary>
